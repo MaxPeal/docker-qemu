@@ -1,15 +1,17 @@
 # tianon/qemu
 
-	touch /home/jsmith/hda.qcow2
+	touch $HOME/hda.qcow2
+	cd downloads && wget https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-10.4.0-amd64-xfce-CD-1.iso 
+	ln -s debian-10.4.0-amd64-xfce-CD-1.iso debian.iso 
 	docker run -it --rm \
 		--device /dev/kvm \
 		--name qemu-container \
-		-v /home/jsmith/hda.qcow2:/tmp/hda.qcow2 \
+		-v $HOME/hda.qcow2:/tmp/hda.qcow2 \
 		-e QEMU_HDA=/tmp/hda.qcow2 \
 		-e QEMU_HDA_SIZE=100G \
 		-e QEMU_CPU=4 \
 		-e QEMU_RAM=4096 \
-		-v /home/jsmith/downloads/debian.iso:/tmp/debian.iso:ro \
+		-v $HOME/downloads/debian.iso:/tmp/debian.iso:ro \
 		-e QEMU_CDROM=/tmp/debian.iso \
 		-e QEMU_BOOT='order=d' \
 		-e QEMU_PORTS='2375 2376' \
