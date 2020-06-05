@@ -10,9 +10,19 @@ set -e
 #   QEMU_BOOT     (-boot)
 #   QEMU_PORTS="xxx[ xxx ...]" (space separated port numbers)
 #   QEMU_NET_USER_EXTRA="net=192.168.76.0/24,dhcpstart=192.168.76.9" (extra raw args for "-net user,...")
+#   QEMU_ARCH=ppc64 (override automatic hostArchitectur "uname -m" )
+#   QEMU_BIN=qemu-system-hppa (override automatic set of qemu binary "qemu-system-$qemuArch" )
 #   QEMU_NO_SSH=1 (suppress automatic port 22 forwarding)
 #   QEMU_NO_SERIAL=1 (suppress automatic "-serial stdio")
 #   QEMU_NO_VNC=1 (suppress automatic "-vnc ':0'")
+#   QEMU_NO_KVM=1 (suppress check for KVM and "-enable-kvm")
+#   QEMU_NO_CPU=1 (suppress automatic "-smp "${QEMU_CPU:-1}")
+#   QEMU_NO_RAM=1 (suppress automatic "-m "${QEMU_RAM:-512}")
+#   QEMU_NO_HDA_CREATE=1
+#   QEMU_NO_HDA=1 (suppress automatic "qemuScsiDevice='virtio-scsi-pci', -drive file="$QEMU_HDA",index=0,media=disk,discard=unmap,detect-zeroes=unmap,if=none,id=hda, -device scsi-hd,drive=hda" )
+#   QEMU_NO_CD=1
+#   QEMU_NO_BOOT=1
+#   QEMU_NO_NET_USER=1  (suppress automatic network creation will implizit also disabel QEMU_NET_USER_EXTRA)
 
 hostArch="$(uname -m)"
 qemuArch="${QEMU_ARCH:-$hostArch}"
@@ -25,6 +35,7 @@ if [ -z "${QEMU_NO_SSH:-}" ]; then
 fi
 qemuPorts+=( ${QEMU_PORTS:-} )
 
+if [ -z "${QEMU_NO_KVM:-}" ]; then
 if [ -e /dev/kvm ]; then
 	qemuArgs+=( -enable-kvm )
 elif [ "$hostArch" = "$qemuArch" ]; then
@@ -35,16 +46,25 @@ elif [ "$hostArch" = "$qemuArch" ]; then
 	echo >&2
 	sleep 3
 fi
+fi
 
+
+if [ -z "${QEMU_NO_CPU:-}" ]; then
 qemuArgs+=( -smp "${QEMU_CPU:-1}" )
+fi
+if [ -z "${QEMU_NO_RAM:-}" ]; then
 qemuArgs+=( -m "${QEMU_RAM:-512}" )
+fi
 
+if [ -z "${QEMU_NO_HDA:-}" ]; then
 if [ -n "${QEMU_HDA:-}" ]; then
+        if [ -z "${QEMU_NO_HDA_CREATE:-}" ]; then
 	if [ ! -f "$QEMU_HDA" -o ! -s "$QEMU_HDA" ]; then
 		(
 			set -x
 			qemu-img create -f qcow2 -o preallocation=off "$QEMU_HDA" "${QEMU_HDA_SIZE:-8G}"
 		)
+	fi
 	fi
 
 	# http://wiki.qemu.org/download/qemu-doc.html#Invocation
@@ -61,15 +81,21 @@ if [ -n "${QEMU_HDA:-}" ]; then
 		-device scsi-hd,drive=hda
 	)
 fi
+fi
 
+if [ -z "${QEMU_NO_CDROM:-}" ]; then
 if [ -n "${QEMU_CDROM:-}" ]; then
 	qemuArgs+=( -cdrom "$QEMU_CDROM" )
 fi
+fi
 
+if [ -z "${QEMU_NO_BOOT:-}" ]; then
 if [ -n "${QEMU_BOOT:-}" ]; then
 	qemuArgs+=( -boot "$QEMU_BOOT" )
 fi
+fi
 
+if [ -n "${QEMU_NO_NET_USER:-}" ]; then
 netArg='user'
 netArg+=",hostname=$(hostname)"
 if [ -n "${QEMU_NET_USER_EXTRA:-}" ]; then
@@ -89,6 +115,7 @@ qemuArgs+=(
 	-netdev "$netArg,id=net"
 	-device "$qemuNetDevice,netdev=net"
 )
+fi
 
 if [ -z "${QEMU_NO_SERIAL:-}" ]; then
 	qemuArgs+=(
@@ -99,6 +126,12 @@ fi
 if [ -z "${QEMU_NO_VNC:-}" ]; then
 	qemuArgs+=(
 		-vnc ':0'
+	)
+fi
+
+if [ -n "${QEMU_ARGS_EXTRA:-}" ]; then
+	qemuArgs+=(
+		"$QEMU_ARGS_EXTRA"
 	)
 fi
 
