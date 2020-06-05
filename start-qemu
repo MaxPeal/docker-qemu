@@ -1,6 +1,6 @@
 #!/bin/bash
-set -e
-
+#####set -e
+set -vx
 # main available options:
 #   QEMU_CPU=n    (cores)
 #   QEMU_RAM=nnn  (megabytes)
@@ -30,12 +30,19 @@ hostArch="$(uname -m)"
 qemuArch="${QEMU_ARCH:-$hostArch}"
 qemu="${QEMU_BIN:-qemu-system-$qemuArch}"
 qemuArgs=()
+base64enc () { echo "$@" | base64 --wrap=0 - ;}
+base64dec () { echo "$@" | base64 -d - ;}
+qemuArgsEXTRA="${QEMU_ARGS_EXTRA:-}"
+qemuArgsEXTRAunBASE64=$(base64dec "${QEMU_ARGS_EXTRA_B64:-}")
+#qemuArgsEXTRA_B64="${qemuArgsEXTRAunBASE64:-}"
+qemuArgsEXTRAunBASE64="${qemuArgsEXTRAunBASE64:-}"
 
 qemuPorts=()
 if [ -z "${QEMU_NO_SSH:-}" ]; then
 	qemuPorts+=( 22 )
 fi
-qemuPorts+=( ${QEMU_PORTS:-} )
+#qemuPorts+=( ${QEMU_PORTS:-} )
+qemuPorts+=( "${QEMU_PORTS:-}" )
 
 if [ -z "${QEMU_NO_KVM:-}" ]; then
 if [ -e /dev/kvm ]; then
@@ -97,7 +104,7 @@ if [ -n "${QEMU_BOOT:-}" ]; then
 fi
 fi
 
-if [ -n "${QEMU_NO_NET_USER:-}" ]; then
+if [ -z "${QEMU_NO_NET_USER:-}" ]; then
 netArg='user'
 netArg+=",hostname=$(hostname)"
 if [ -n "${QEMU_NET_USER_EXTRA:-}" ]; then
@@ -131,13 +138,41 @@ if [ -z "${QEMU_NO_VNC:-}" ]; then
 	)
 fi
 
-if [ -n "${QEMU_ARGS_EXTRA:-}" ]; then
+if [ -n "${qemuArgsEXTRA:-}" ]; then
 	qemuArgs+=(
-		"${QEMU_ARGS_EXTRA}"
+		"${qemuArgsEXTRA}"
 	)
+fi
+
+if [ -n "${qemuArgsEXTRAunBASE64:-}" ]; then
+        qemuArgs+=(
+                "${qemuArgsEXTRAunBASE64}"
+        )
 fi
 
 qemuArgs+=( "$@" )
 
-set -x
-exec "$qemu" "${qemuArgs[@]}"
+set -vx
+#exec "${qemu}" "${qemuArgs[@]}" || true
+
+#CMDstr="${qemu}" "${qemuArgs[@]}"
+
+#eval CMDstrDEBUG="${CMDstrDEBUG[@]}"
+CMDstrDEBUG="${CMDstrDEBUG[@]}"
+echo "${CMDstrDEBUG}"
+eval exec "${CMDstrDEBUG}"
+
+
+CMDstrDEBUGunBASE64=$(base64dec "${CMDstrDEBUG_B64:-}")
+CMDstrDEBUGunBASE64="${CMDstrDEBUGunBASE64:-}"
+
+#CMDstrDEBUGunBASE64="${CMDstrDEBUGunBASE64[@]}"
+CMDstrDEBUGunBASE64="${CMDstrDEBUGunBASE64[*]}"
+echo "${CMDstrDEBUGunBASE64}"
+eval exec "${CMDstrDEBUGunBASE64}"
+
+#CMDstr="${qemu} ${qemuArgs[@]}"
+CMDstr="${qemu} ${qemuArgs[*]}"
+echo "${CMDstr}"
+eval exec "${CMDstr}"
+
