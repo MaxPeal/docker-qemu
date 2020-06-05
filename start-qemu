@@ -20,7 +20,7 @@ set -e
 #   QEMU_NO_RAM=1 (suppress automatic "-m "${QEMU_RAM:-512}")
 #   QEMU_NO_HDA_CREATE=1
 #   QEMU_NO_HDA=1 (suppress automatic "qemuScsiDevice='virtio-scsi-pci', -drive file="$QEMU_HDA",index=0,media=disk,discard=unmap,detect-zeroes=unmap,if=none,id=hda, -device scsi-hd,drive=hda" )
-#   QEMU_NO_CD=1
+#   QEMU_NO_CDROM=1
 #   QEMU_NO_BOOT=1
 #   QEMU_NO_NET_USER=1  (suppress automatic network creation will implizit also disabel QEMU_NET_USER_EXTRA)
 #   QEMU_ARGS_EXTRA="-m 192 -M 40p -bios q40pofw-serial.rom -serial telnet::4441,server -hda aix-hdd.qcow2 -cdrom ./cd.iso -net nic -net tap -vga none -nographic" (extra raw args for qemu)
@@ -133,7 +133,7 @@ fi
 
 if [ -n "${QEMU_ARGS_EXTRA:-}" ]; then
 	qemuArgs+=(
-		"$QEMU_ARGS_EXTRA"
+		"${QEMU_ARGS_EXTRA}"
 	)
 fi
 
