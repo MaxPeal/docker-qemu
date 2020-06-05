@@ -23,6 +23,8 @@ set -e
 #   QEMU_NO_CD=1
 #   QEMU_NO_BOOT=1
 #   QEMU_NO_NET_USER=1  (suppress automatic network creation will implizit also disabel QEMU_NET_USER_EXTRA)
+#   QEMU_ARGS_EXTRA="-m 192 -M 40p -bios q40pofw-serial.rom -serial telnet::4441,server -hda aix-hdd.qcow2 -cdrom ./cd.iso -net nic -net tap -vga none -nographic" (extra raw args for qemu)
+#   e.g. QEMU_BIN=qemu-system-ppc, QEMU_ARGS_EXTRA="-m 192 -M 40p -bios q40pofw-serial.rom -serial telnet::4441,server -hda aix-hdd.qcow2 -cdrom ./cd.iso -net nic -net tap -vga none -nographic"
 
 hostArch="$(uname -m)"
 qemuArch="${QEMU_ARCH:-$hostArch}"
