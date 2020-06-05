@@ -160,13 +160,18 @@ RUN set -eux; \
 # basic smoke test
 	qemu-img --version
 
-RUN HFILE=buildx HASHcmd=sha256sum HASHSUM=3f4e77686659766a0726b5a47a87e2cc14c86ebf15abf7f19c45d23b0daff222 HURL=https://github.com/artyom-tarasenko/openfirmware/releases/download/40p-20190413/q40pofw-serial.rom ;\
-printf "HFILE=$HFILE HASHcmd=$HASHcmd HASHSUM=$HASHSUM HURL=$HURL" ;\
-curl -o $HFILE -LR -C- -f -S --connect-timeout 15 --max-time 600 --retry 3 --dump-header - --compressed --verbose $HURL ; (printf %b CHECKSUM\\072\\040expect\\040this\\040$HASHcmd\\072\\040$HASHSUM\\040\\052$HFILE\\012 ; printf %b $HASHSUM\\040\\052$HFILE\\012 | $HASHcmd -c - ;) || (printf %b ERROR\\072\\040CHECKSUMFAILD\\072\\040the\\040file\\040has\\040this\\040$HASHcmd\\072\\040 ; $HASHcmd -b $HFILE ; exit 1) ;\
+RUN set -eux; \
+        savedAptMark="$(apt-mark showmanual)"; \
+        apt-get update; apt-get install -y --no-install-recommends \
+                curl ca-certificates; \
+        rm -rf /var/lib/apt/lists/*; \
+        HFILE=/usr/local/share/qemu/q40pofw-serial.rom HASHcmd=sha256sum HASHSUM=4a98bca4ab2149e2fe9e7cffb2215c04e2451f30d2e1cff173086908cb94fd17 HURL=https://github.com/artyom-tarasenko/openfirmware/releases/download/40p-20190413/q40pofw-serial.rom ;\
+        printf "HFILE=$HFILE HASHcmd=$HASHcmd HASHSUM=$HASHSUM HURL=$HURL" ;\
+        curl -o $HFILE -LR -C- -f -S --connect-timeout 15 --max-time 600 --retry 3 $HURL ; (printf %b CHECKSUM\\072\\040expect\\040this\\040$HASHcmd\\072\\040$HASHSUM\\040\\052$HFILE\\012 ; printf %b $HASHSUM\\040\\052$HFILE\\012 | $HASHcmd -c - ;) || (printf %b ERROR\\072\\040CHECKSUMFAILD\\072\\040the\\040file\\040has\\040this\\040$HASHcmd\\072\\040 ; $HASHcmd -b $HFILE ; exit 1) ;\
 \
-HFILE=buildx HASHcmd=sha256sum HASHSUM=3f4e77686659766a0726b5a47a87e2cc14c86ebf15abf7f19c45d23b0daff222 HURL=https://github.com/artyom-tarasenko/openfirmware/releases/download/40p-20190413/q40pofw-vga.rom ;\
-printf "HFILE=$HFILE HASHcmd=$HASHcmd HASHSUM=$HASHSUM HURL=$HURL" ;\
-curl -o $HFILE -LR -C- -f -S --connect-timeout 15 --max-time 600 --retry 3 --dump-header - --compressed --verbose $HURL ; (printf %b CHECKSUM\\072\\040expect\\040this\\040$HASHcmd\\072\\040$HASHSUM\\040\\052$HFILE\\012 ; printf %b $HASHSUM\\040\\052$HFILE\\012 | $HASHcmd -c - ;) || (printf %b ERROR\\072\\040CHECKSUMFAILD\\072\\040the\\040file\\040has\\040this\\040$HASHcmd\\072\\040 ; $HASHcmd -b $HFILE ; exit 1)
+        HFILE=/usr/local/share/qemu/q40pofw-vga.rom HASHcmd=sha256sum HASHSUM=84b55473bb4445b201b545dc5938fce5be96080182a92ea16c7ce131705bc204 HURL=https://github.com/artyom-tarasenko/openfirmware/releases/download/40p-20190413/q40pofw-vga.rom ;\
+        printf "HFILE=$HFILE HASHcmd=$HASHcmd HASHSUM=$HASHSUM HURL=$HURL" ;\
+        curl -o $HFILE -LR -C- -f -S --connect-timeout 15 --max-time 600 --retry 3 $HURL ; (printf %b CHECKSUM\\072\\040expect\\040this\\040$HASHcmd\\072\\040$HASHSUM\\040\\052$HFILE\\012 ; printf %b $HASHSUM\\040\\052$HFILE\\012 | $HASHcmd -c - ;) || (printf %b ERROR\\072\\040CHECKSUMFAILD\\072\\040the\\040file\\040has\\040this\\040$HASHcmd\\072\\040 ; $HASHcmd -b $HFILE ; exit 1)
 
 STOPSIGNAL SIGHUP
 
