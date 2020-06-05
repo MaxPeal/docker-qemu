@@ -90,15 +90,6 @@ qemuArgs+=(
 	-device "$qemuNetDevice,netdev=net"
 )
 
-<<<<<<< HEAD
-if [ -z "${QEMU_NO_VNC:-}" ]; then
-	qemuArgs+=(
-		-vnc ':0'
-	)
-fi
-
-=======
->>>>>>> 4597614c0012b3c026171135b035ec7bec21f38e
 if [ -z "${QEMU_NO_SERIAL:-}" ]; then
 	qemuArgs+=(
 		-serial stdio
