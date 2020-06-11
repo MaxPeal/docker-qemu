@@ -150,7 +150,7 @@ RUN set -eux; \
 RUN set -eux; \
         savedAptMark="$(apt-mark showmanual)"; \
         apt-get update; apt-get install -y --no-install-recommends \
-                curl ca-certificates; \
+                curl ca-certificates dnsutils iproute2 net-tools; \
         rm -rf /var/lib/apt/lists/*; \
         HFILE=/usr/local/share/qemu/q40pofw-serial.rom HASHcmd=sha256sum HASHSUM=4a98bca4ab2149e2fe9e7cffb2215c04e2451f30d2e1cff173086908cb94fd17 HURL=https://github.com/artyom-tarasenko/openfirmware/releases/download/40p-20190413/q40pofw-serial.rom ;\
         printf "HFILE=$HFILE HASHcmd=$HASHcmd HASHSUM=$HASHSUM HURL=$HURL" ;\
