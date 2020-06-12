@@ -163,7 +163,7 @@ RUN set -eux; \
 RUN wget https://github.com/MaxPeal/docker-qemu/raw/master/openbios-ppc-rtas --directory-prefix=/usr/local/share/qemu/ 
 RUN wget https://github.com/MaxPeal/docker-qemu/releases/download/40p-test2/qemu-system-ppc-qemu-40p-20190406-aix-boots.tar.xz ; \
 	tar xvJf qemu-system-ppc-qemu-40p-20190406-aix-boots.tar.xz ; \
-	mv *qemu-40p-20190406-aix-boots /usr/local/bin/ ; rm q40*.rom
+	chmod 755 *qemu-40p-20190406-aix-boots ; mv *qemu-40p-20190406-aix-boots /usr/local/bin/ ; rm q40*.rom
 
 STOPSIGNAL SIGHUP
 
