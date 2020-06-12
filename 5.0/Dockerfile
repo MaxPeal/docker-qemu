@@ -63,7 +63,7 @@ RUN set -eux; \
 # patch kernel headers ala https://github.com/torvalds/linux/commit/467d12f5c7842896d2de3ced74e4147ee29e97c8
 # filed in debian at https://bugs.debian.org/960271
 	wget -O bits-per-long.patch 'https://github.com/torvalds/linux/commit/467d12f5c7842896d2de3ced74e4147ee29e97c8.patch'; \
-	patch --input="$PWD/bits-per-long.patch" --strip=4 --directory=/usr/include/linux; \
+	#DISABEL###patch --input="$PWD/bits-per-long.patch" --strip=4 --directory=/usr/include/linux; \
 	rm bits-per-long.patch; \
 	\
 	tarball="$(basename "$QEMU_URL")"; \
@@ -150,7 +150,7 @@ RUN set -eux; \
 RUN set -eux; \
         savedAptMark="$(apt-mark showmanual)"; \
         apt-get update; apt-get install -y --no-install-recommends \
-                curl ca-certificates dnsutils iproute2 net-tools; \
+                curl wget tar xz-utils zstd ca-certificates dnsutils iproute2 net-tools; \
         rm -rf /var/lib/apt/lists/*; \
         HFILE=/usr/local/share/qemu/q40pofw-serial.rom HASHcmd=sha256sum HASHSUM=4a98bca4ab2149e2fe9e7cffb2215c04e2451f30d2e1cff173086908cb94fd17 HURL=https://github.com/artyom-tarasenko/openfirmware/releases/download/40p-20190413/q40pofw-serial.rom ;\
         printf "HFILE=$HFILE HASHcmd=$HASHcmd HASHSUM=$HASHSUM HURL=$HURL" ;\
@@ -159,6 +159,11 @@ RUN set -eux; \
         HFILE=/usr/local/share/qemu/q40pofw-vga.rom HASHcmd=sha256sum HASHSUM=84b55473bb4445b201b545dc5938fce5be96080182a92ea16c7ce131705bc204 HURL=https://github.com/artyom-tarasenko/openfirmware/releases/download/40p-20190413/q40pofw-vga.rom ;\
         printf "HFILE=$HFILE HASHcmd=$HASHcmd HASHSUM=$HASHSUM HURL=$HURL" ;\
         curl -o $HFILE -LR -C- -f -S --connect-timeout 15 --max-time 600 --retry 3 $HURL ; (printf %b CHECKSUM\\072\\040expect\\040this\\040$HASHcmd\\072\\040$HASHSUM\\040\\052$HFILE\\012 ; printf %b $HASHSUM\\040\\052$HFILE\\012 | $HASHcmd -c - ;) || (printf %b ERROR\\072\\040CHECKSUMFAILD\\072\\040the\\040file\\040has\\040this\\040$HASHcmd\\072\\040 ; $HASHcmd -b $HFILE ; exit 1)
+
+RUN wget https://github.com/MaxPeal/docker-qemu/raw/master/openbios-ppc-rtas --directory-prefix=/usr/local/share/qemu/ 
+RUN wget https://github.com/MaxPeal/docker-qemu/releases/download/40p-test2/qemu-system-ppc-qemu-40p-20190406-aix-boots.tar.xz ; \
+	tar xvJf qemu-system-ppc-qemu-40p-20190406-aix-boots.tar.xz ; \
+	mv *qemu-40p-20190406-aix-boots /usr/local/bin/ ; rm q40*.rom
 
 STOPSIGNAL SIGHUP
 
